@@ -26,5 +26,5 @@ More infos about the mobile application can also be found here:
 http://www.daubmeier.de/philip/sensoremitter
 
 Dependencies:
-    * R.NET wrapper: http://rdotnet.codeplex.com/
-    * R library: www.r-project.org
+  * R.NET wrapper: http://rdotnet.codeplex.com/
+  * R library: www.r-project.org
