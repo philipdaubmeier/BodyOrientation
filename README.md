@@ -20,11 +20,11 @@ and be played again later to try different methods on the same set of training d
 
 The mobile application 'Sensor Emitter', to collect the phones sensor values and transmit 
 them onto the PC is also written in C# and available for the Windows Phone 7 OS in the marketplace:
-http://windowsphone.com/s?appid=08c94bea-924b-44b9-b4e3-03e571ea8ceb
+[Sensor Emitter App](http://windowsphone.com/s?appid=08c94bea-924b-44b9-b4e3-03e571ea8ceb)
 
 More infos about the mobile application can also be found here:
-http://www.daubmeier.de/philip/sensoremitter
+[Sensor Emitter Website](http://www.daubmeier.de/philip/sensoremitter)
 
 ### Dependencies
-  * R.NET wrapper: http://rdotnet.codeplex.com/
-  * R library: www.r-project.org
+  * R.NET wrapper: [rdotnet.codeplex.com](http://rdotnet.codeplex.com)
+  * R library: [r-project.org](http://www.r-project.org)
