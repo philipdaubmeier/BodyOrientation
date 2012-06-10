@@ -25,6 +25,6 @@ http://windowsphone.com/s?appid=08c94bea-924b-44b9-b4e3-03e571ea8ceb
 More infos about the mobile application can also be found here:
 http://www.daubmeier.de/philip/sensoremitter
 
-Dependencies:
+### Dependencies
   * R.NET wrapper: http://rdotnet.codeplex.com/
   * R library: www.r-project.org
