@@ -6,6 +6,81 @@ using System.Windows;
 
 namespace BodyOrientationLib
 {
+    /// <summary>
+    /// Implements a generic and very versatile base class for concrete multiplexers.
+    /// The main logic of multiplexing is implemented here. The Multiplexer essentially takes
+    /// multiple time series of input objects (objects of classes that implement the 
+    /// IMultiplexable interface, and have a set of double values, so they can be interpolated)
+    /// and packs them into a single stream of output objects.
+    /// 
+    /// The multiplexer can then be used like follows: Create an instance of the multiplexer,
+    /// subscribe to the ItemMultiplexed event, and call the PushXValue methods every time a new 
+    /// item on a stream arrives. These PushXValues must be implemented for a concrete Multiplexer
+    /// and should call the generic Push method of the base class (for details, see the example 
+    /// on the bottom).
+    ///
+    /// <example>
+    /// <code>
+    /// var multiplexer = new TupleMultiplexer();
+    ///
+    /// multiplexer.ItemMultiplexed += (s, e) => { Console.WriteLine(e.MultiplexedItem); };
+    ///
+    /// multiplexer.PushIntegerValue(42);
+    /// multiplexer.PushDoubleValue(Math.PI);
+    /// </code>
+    /// </example>
+    /// 
+    /// The multiplexer demonstated in the above example is using a very simple implementation
+    /// of the generic abstract Multiplexer. To make this example work, a small class NumberWrapper
+    /// was designed, as only IMultiplexable objects can be multiplexed. It has only a single 
+    /// property and has implicit cast operators to allow to cast between the actual numbers and
+    /// the wrapper:
+    /// 
+    /// <example>
+    /// <code>
+    /// public class TupleMultiplexer : Multiplexer&lt;Tuple&lt;int, double&gt;&gt;
+    /// {
+    ///     public class NumberWrapper : IMultiplexable
+    ///     {
+    ///         public double TheValue { get; set; }
+    /// 
+    ///         public int NumMultiplexableItems { get { return 1; } }
+    ///         public double[] ExtractValues() { return new double[] { TheValue }; }
+    ///         public void InjectValues(double[] values) { TheValue = values[0]; }
+    ///         public object Clone() { return new NumberWrapper() { TheValue = this.TheValue }; }
+    /// 
+    ///         public static implicit operator NumberWrapper(int value) { return new NumberWrapper() { TheValue = value }; }
+    ///         public static implicit operator NumberWrapper(double value) { return new NumberWrapper() { TheValue = value }; }
+    ///         public static implicit operator int(NumberWrapper value) { return (int)value.TheValue; }
+    ///         public static implicit operator double(NumberWrapper value) { return value.TheValue; }
+    ///     }
+    /// 
+    ///     public TupleMultiplexer()
+    ///         : base(InterpolationMethod.None, new StreamInfo[]{
+    ///             new StreamInfo(){
+    ///                 StreamId = 0,
+    ///                 Name = "Integer stream",
+    ///                 NumValues = 1
+    ///             },
+    ///             new StreamInfo(){
+    ///                 StreamId = 1,
+    ///                 Name = "Floating point number stream",
+    ///                 NumValues = 1
+    ///             }
+    ///     }) { }
+    /// 
+    ///     public void PushIntegerValue(int value) { base.Push(0, (NumberWrapper)value); }
+    ///     public void PushDoubleValue(double value) { base.Push(1, (NumberWrapper)value); }
+    /// 
+    ///     protected override Tuple&lt;int, double&gt; PackMultiplexItem(IMultiplexable[] values)
+    ///     {
+    ///         return new Tuple&lt;int, double&gt;((int)(NumberWrapper)values[0], (double)(NumberWrapper)values[1]);
+    ///     }
+    /// }
+    /// </code>
+    /// </example>
+    /// <remarks>Author: Philip Daubmeier</remarks>
+    /// </summary>
     public abstract class Multiplexer<TOut>
     {
         public class StreamInfo
@@ -58,6 +133,9 @@ namespace BodyOrientationLib
                 throw new ArgumentException("Not a single stream info given for streamMetadata!");
 
             this.interpolationMethod = interpolationMethod;
+
+            if (interpolationMethod != InterpolationMethod.None)
+                throw new NotImplementedException("Interpolation is not implemented yet!");
 
             // Store metadata
             this.numStreams = streamMetadata.Length;
@@ -157,16 +235,33 @@ namespace BodyOrientationLib
                         }
                 }
 
+                // TODO: where is the point in time where we want our interpolation result?
+                // For testing, hardcoded to be 30 ms in the past.
+                long timestampWanted = timestamp - 30;
+
                 // Interpolate every single value
                 if (interpolationMethod == InterpolationMethod.Linear && prevValues != null)
-                    for (int i = 0; i < values.Length; i++) { }
-                        //values[i] = InterpolateLinear(prevValues[i], values[i]);
+                    for (int i = 0; i < values.Length; i++)
+                        values[i] = InterpolateLinear(prevTimestamp, prevValues[i], timestamp, values[i], timestampWanted);
                 else if (interpolationMethod == InterpolationMethod.Square && prevValues != null && prev2Values != null)
-                    for (int i = 0; i < values.Length; i++) { }
-                        //values[i] = InterpolateSquare(prev2Values[i], prevValues[i], values[i]);
+                    for (int i = 0; i < values.Length; i++)
+                        values[i] = InterpolateSquare(prev2Timestamp, prev2Values[i], prevTimestamp, prevValues[i], timestamp, values[i], timestampWanted);
                 else if (interpolationMethod == InterpolationMethod.Cubic && prevValues != null && prev2Values != null && prev3Values != null)
-                    for (int i = 0; i < values.Length; i++) { }
-                        //values[i] = InterpolateCubic(prev3Values[i], prev2Values[i], prevValues[i], values[i]);
+                    for (int i = 0; i < values.Length; i++)
+                        values[i] = InterpolateCubic(prev3Timestamp, prev3Values[i], prev2Timestamp, prev2Values[i], prevTimestamp, prevValues[i], timestamp, values[i], timestampWanted);
+
+                // TODO: handle special case where it should be interpolated between two angles:
+                // we need to annotate the properties that represent angles in the featuresets.
+                // Also include the kind of angle in this annotation: degrees or radians? -pi to pi
+                // or 0 to 2*pi range? Do interpolation then via the LerpAngle/LerpRadians method, 
+                // already implemented in another module of this project.
+                // Also interpolate Quaternions with the Lerp method, instead interpolating the X,Y,Z,W
+                // components seperately.
+                // Those open questions, and the performance overhead when interpolating every time
+                // is the reason the constructor throws a NotImplementedException for every
+                // interpolation method except from 'None'. It has shown, the sensor and kinect input
+                // streams are fairly regular and do not need interpolation for multiplexing.
+                // This simplifies things a lot!
 
                 // Store the interpolated values in the buffer for interpolating the next items
                 newEntry.Values = values;
@@ -187,6 +282,52 @@ namespace BodyOrientationLib
 
                 OnItemMultiplexed(PackMultiplexItem(toPack));
             }
+        }
+
+        /// <summary>
+        /// Implements a linear interpolation method. The two given points dont have to be equidistant, 
+        /// and are given as (x, y) tuples. The last parameter x is the point where the respective f(x) 
+        /// is searched for, which is then returned.
+        /// </summary>
+        private double InterpolateLinear(double x0, double y0, double x1, double y1, double x)
+        {
+            return y0 * (x - x1) / (x0 - x1) + y1 * (x - x0) / (x1 - x0);
+        }
+
+        /// <summary>
+        /// Implements Nevilles method to interpolate with a quadratic polynom. Complexity is O(n²).
+        /// Points dont have to be equidistant, and are given as (x, y) tuples. The last parameter
+        /// x is the point where the respective f(x) is searched for, which is then returned.
+        /// </summary>
+        private double InterpolateSquare(double x0, double y0, double x1, double y1, double x2, double y2, double x)
+        {
+            return NevillesInterpolator(new double[] { x0, x1, x2 }, new double[] { y0, y1, y2 }, x);
+        }
+
+        /// <summary>
+        /// Implements Nevilles method to interpolate with a cubic polynom. Complexity is O(n²).
+        /// Points dont have to be equidistant, and are given as (x, y) tuples. The last parameter
+        /// x is the point where the respective f(x) is searched for, which is then returned.
+        /// </summary>
+        private double InterpolateCubic(double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3, double x)
+        {
+            return NevillesInterpolator(new double[] { x0, x1, x2, x3 }, new double[] { y0, y1, y2, y3 }, x);
+        }
+
+        /// <summary>
+        /// Implements Nevilles method to interpolate with polynoms of (n-1)-th grade between n
+        /// given points. Points dont have to be equidistant, and are given as (x, y) tuples. The 
+        /// last parameter x is the point where the respective f(x) is searched for, which is 
+        /// then returned.
+        /// </summary>
+        private double NevillesInterpolator(double[] xi, double[] f, double x)
+        {
+            int n = xi.Length - 1;
+            for (int m = 1; m <= n; m++)
+                for (int i = 0; i <= n - m; i++)
+                    f[i] = ((x - xi[i + m]) * f[i] + (xi[i] - x) * f[i + 1]) / (xi[i] - xi[i + m]);
+
+            return f[0];
         }
 
         protected abstract TOut PackMultiplexItem(IMultiplexable[] values);

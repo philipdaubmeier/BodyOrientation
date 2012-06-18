@@ -29,6 +29,8 @@ namespace BodyOrientationLib
 
         public Quaternion CalibrationQuaternion { get; set; }
 
+        public double CalibrationAngle { get; set; }
+
         public ManualRawFeatureSet()
         {
             BodyPosture = new Posture(Posture.State.NotClassified);
@@ -38,13 +40,13 @@ namespace BodyOrientationLib
         public override void WriteToRecorder(BinaryWriter writer)
         {
             writer.Write(BodyPosture.GetId());
-            //TODO: write quat
+            //TODO: write quat and angle
         }
 
         public override void ReadFromRecorder(BinaryReader reader)
         {
             BodyPosture = Posture.FromId(reader.ReadInt32());
-            //TODO: read quat
+            //TODO: read quat and angle
         }
 
         public override object Clone()
@@ -53,7 +55,8 @@ namespace BodyOrientationLib
             {
                 BodyPosture = this.BodyPosture,
                 NextPosture = this.NextPosture,
-                CalibrationQuaternion = this.CalibrationQuaternion
+                CalibrationQuaternion = this.CalibrationQuaternion,
+                CalibrationAngle = this.CalibrationAngle
             };
         }
     }
