@@ -1,8 +1,0 @@
-C:\Users\Phil\Desktop\Uni\Masterarbeit\BodyOrientation\BodyOrientationLib\bin\Release\BodyOrientationLib.dll
-C:\Users\Phil\Desktop\Uni\Masterarbeit\BodyOrientation\BodyOrientationLib\bin\Release\BodyOrientationLib.pdb
-C:\Users\Phil\Desktop\Uni\Masterarbeit\BodyOrientation\BodyOrientationLib\bin\Release\RDotNet.dll
-C:\Users\Phil\Desktop\Uni\Masterarbeit\BodyOrientation\BodyOrientationLib\bin\Release\RDotNet.NativeLibrary.dll
-C:\Users\Phil\Desktop\Uni\Masterarbeit\BodyOrientation\BodyOrientationLib\bin\Release\RDotNet.NativeLibrary.pdb
-C:\Users\Phil\Desktop\Uni\Masterarbeit\BodyOrientation\BodyOrientationLib\obj\Release\ResolveAssemblyReference.cache
-C:\Users\Phil\Desktop\Uni\Masterarbeit\BodyOrientation\BodyOrientationLib\obj\Release\BodyOrientationLib.dll
-C:\Users\Phil\Desktop\Uni\Masterarbeit\BodyOrientation\BodyOrientationLib\obj\Release\BodyOrientationLib.pdb
