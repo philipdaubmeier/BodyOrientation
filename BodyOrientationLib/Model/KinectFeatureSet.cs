@@ -129,13 +129,11 @@ namespace BodyOrientationLib
 
         private void CalculateShoulderOrientation(Vector3D shoulderLeft, Vector3D shoulderRight)
         {
-            // Those are not really planes, but rather vectors that lie in the plane orthogonal to the XZ-plane
-            // Therefore both vectors are 0 in the Y component
-            var shoulderPlane = (shoulderRight - shoulderLeft).SetToZero(NuiVectorExtensions.Component.Y);
-            var cameraPlane = new Vector3D(1, 0, 0);
+            // Project the vector pointing from the left to right shoulder onto the ground
+            var shoulderVector = (shoulderRight - shoulderLeft).SetToZero(NuiVectorExtensions.Component.Y);
 
-            // Shoulder angle relative to the camera plane
-            ShoulderOrientation = Vector3D.AngleBetween(shoulderPlane, cameraPlane).ToRadians();
+            // Get the angle where the 2D-vector (lying on the ground) is pointing at
+            ShoulderOrientation = -Math.Atan2(shoulderVector.Z, shoulderVector.X);
         }
     }
 }

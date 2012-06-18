@@ -62,6 +62,13 @@ namespace BodyOrientationGUI
         }
         #endregion
 
+        private bool recordRda = false;
+        private RdaExporter<CombinedFeatureSet> rdaExporter;
+        private void RecordClicked(object sender, RoutedEventArgs e)
+        {
+            recordRda = !recordRda;
+        }
+
         private void StartSources(bool play, string path)
         {
             // Temporary quick and dirty solution: Only let the user chose once to play or 
@@ -78,6 +85,10 @@ namespace BodyOrientationGUI
             //var arffExporter = new ArffExporter<SensorFeatureSet>(@"C:\arffexport.arff", new Dictionary<string, string[]>() { { "Class", Posture.EnumerateStateNames().ToArray() } });
             //this.Closed += (s, e) => { arffExporter.Dispose(); };
 
+            rdaExporter = new RdaExporter<CombinedFeatureSet>(System.IO.Path.Combine(Environment.GetFolderPath(
+                                                              System.Environment.SpecialFolder.MyDocuments), @"bo.txt"));
+            this.Closed += (s, e) => { rdaExporter.Dispose(); };
+
             recorder = new BinaryRecorder<CombinedFeatureSet>(path, play ? RecorderMode.PlayRealtime : RecorderMode.Record);
             this.Closed += (s, e) => {recorder.Dispose(); };
 
@@ -85,9 +96,11 @@ namespace BodyOrientationGUI
             {
                 Quaternion calibQuat = new Quaternion();
 
-                // TODO: these two line are just for testing
+                // TODO: these lines are just for testing, remove at some point
+                double calibAngle = 0d;
                 this.phoneModel.CalibrationEnabled = true;
                 this.phoneModel.Calibrated += (s, e) => { calibQuat = e.CalibrationQuaternion; };
+                multiplexer.CalibrationAngleCalculated += (s, e) => { calibAngle = e.CalibrationAngle; };
 
                 // Playing mode: Just read the combined recording, extract all three raw-value-set objects
                 // and put them back into the multiplexer (to reprocess the sequence)
@@ -102,8 +115,9 @@ namespace BodyOrientationGUI
                     //    this.phoneModel.CalibrateManually(calibQuat);
                     //}
 
-                    // TODO: just for testing, delete next line afterwards
+                    // TODO: just for testing, delete next 2 lines afterwards
                     e.Frame.RawManual.CalibrationQuaternion = calibQuat;
+                    e.Frame.RawManual.CalibrationAngle = calibAngle;
 
                     multiplexer.PushRawKinectValues(e.Frame.RawKinect);
                     multiplexer.PushRawManualValues(e.Frame.RawManual);
@@ -138,6 +152,7 @@ namespace BodyOrientationGUI
                 // React to changing calibration of the phone
                 this.phoneModel.CalibrationEnabled = true;
                 this.phoneModel.Calibrated += (s, e) => { manualSource.SetNewCalibration(e.CalibrationQuaternion); };
+                multiplexer.CalibrationAngleCalculated += (s, e) => { manualSource.SetNewCalibrationAngle(e.CalibrationAngle); };
 
                 // Dispose all input streams when application is closed
                 this.Closed += (s, e) => { kinectSource.Dispose(); sensorSource.Dispose(); manualSource.Dispose(); };
@@ -158,6 +173,9 @@ namespace BodyOrientationGUI
             plotterGroup.Plot(e.MultiplexedItem);
 
             phoneModel.Update3dPhoneModel(e.MultiplexedItem.RawSensors);
+
+            if (recordRda)
+                rdaExporter.WriteData(e.MultiplexedItem);
 
             // Here we can export different value sets to ARFF
             //arffExporter.WriteData(e.MultiplexedItem.SensorFeatures);

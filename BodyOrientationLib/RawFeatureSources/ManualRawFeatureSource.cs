@@ -14,7 +14,7 @@ namespace BodyOrientationLib
         private Posture[] phases = null;
 
         private Quaternion calibrationQuaternion = new Quaternion();
-
+        private double calibrationAngle = 0d;
 
         public ManualRawFeatureSource(Mode sourceMode) : this(sourceMode, null) { }
 
@@ -59,13 +59,21 @@ namespace BodyOrientationLib
             PushOutNextItem();
         }
 
+        public void SetNewCalibrationAngle(double angle)
+        {
+            calibrationAngle = angle;
+
+            PushOutNextItem();
+        }
+
         private void PushOutNextItem()
         {
             var manualFeatures = new ManualRawFeatureSet()
             {
                 BodyPosture = phases[phase],
                 NextPosture = phases[(phase + 1) % phases.Length],
-                CalibrationQuaternion = calibrationQuaternion
+                CalibrationQuaternion = calibrationQuaternion,
+                CalibrationAngle = calibrationAngle
             };
 
             if (sourceMode == Mode.UseLiveStreamAndRecordIt)

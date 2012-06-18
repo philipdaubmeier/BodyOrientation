@@ -39,8 +39,17 @@
             <bodycontrols:SkeletonModel Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" x:Name="skeletonModel" Margin="0, 6, 12, 0"></bodycontrols:SkeletonModel>
             <bodycontrols:SkeletonModel Grid.Column="3" Grid.Row="0" Grid.RowSpan="3" x:Name="predictedSkeletonModel" Margin="0, 6, 6, 0"></bodycontrols:SkeletonModel>
             <bodycontrols:CombinedFeaturesPlotterGroup Grid.Row="0" Grid.Column="0" x:Name="plotterGroup" Margin="-6, 0, 6, 0"></bodycontrols:CombinedFeaturesPlotterGroup>
-            <bodycontrols:RecorderControls Grid.Row="4" Grid.ColumnSpan="4" Margin="0, 12, 0, 0" x:Name="recorderControls" />
-        
+
+            <Grid Grid.Row="4" Grid.ColumnSpan="4" Margin="0, 12, 0, 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <bodycontrols:RecorderControls Grid.Column="0" x:Name="recorderControls"/>
+                <Button Grid.Column="1" Click="RecordClicked">record</Button>
+            </Grid>
+                
             <!-- Network status updates -->
             <ListBox Grid.Row="2" Name="listBoxStatusUpdates" Canvas.Left="0" Canvas.Top="93" Margin="0, 6, 12, 0" />
 

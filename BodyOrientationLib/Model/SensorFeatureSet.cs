@@ -13,6 +13,7 @@ namespace BodyOrientationLib
 
         //TODO add to all methods
         public double Heading { get; set; }
+        public double HeadingDelta { get; set; }
 
         public double RotationX { get; set; }
         public double RotationY { get; set; }
