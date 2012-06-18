@@ -76,6 +76,7 @@
     <Compile Include="Recorder\ArffExporter.cs" />
     <Compile Include="Recorder\BinaryRecorder.cs" />
     <Compile Include="Recorder\IRecordable.cs" />
+    <Compile Include="Recorder\RdaExporter.cs" />
     <Compile Include="SequenceProcessing\CombinedMultiplexer.cs" />
     <Compile Include="SequenceProcessing\Fourier\Complex.cs" />
     <Compile Include="SequenceProcessing\Fourier\FourierTransform.cs" />

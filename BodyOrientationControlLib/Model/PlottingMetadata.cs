@@ -62,11 +62,12 @@ namespace BodyOrientationControlLib
             new PlottableValue<SensorFeatureSet>("Rotation Y (Roll) Energy", v => "Rotation Y Energy: " + v.ToString("0.00"), s => s.RotationYEnergy, 0, -1, 1),
             new PlottableValue<SensorFeatureSet>("Rotation Z (Yaw) Energy", v => "Rotation Z Energy: " + v.ToString("0.00"), s => s.RotationZEnergy, 0, -1, 1),
 
-            new PlottableValue<SensorFeatureSet>("Heading", v => "Heading: " + (v / Math.PI * 180).ToString("0.0"), s => s.Heading, 0, -Math.PI, Math.PI),
+            new PlottableValue<SensorFeatureSet>("Heading", v => "Phone Heading: " + (v / Math.PI * 180).ToString("0.0") + "°", s => s.Heading, 0, -Math.PI, Math.PI),
+            new PlottableValue<SensorFeatureSet>("Heading Delta", v => "Heading Delta: " + (v / Math.PI * 180).ToString("0.0") + "°", s => s.HeadingDelta, 0, -Math.PI, Math.PI)
         };
 
         private static PlottableValue<KinectFeatureSet>[] kinectFeatureValues = new PlottableValue<KinectFeatureSet>[]{
-            new PlottableValue<KinectFeatureSet>("Kinect: Shoulder Angle", v => "Shoulder Angle: " + (v / Math.PI * 180) + "°", s => s.ShoulderOrientation, 0, -Math.PI, Math.PI),
+            new PlottableValue<KinectFeatureSet>("Kinect: Shoulder Angle", v => "Shoulder Heading: " + (v / Math.PI * 180).ToString("0.0") + "°", s => s.ShoulderOrientation, 0, -Math.PI, Math.PI),
             new PlottableValue<KinectFeatureSet>("Kinect: Left Leg Angle", v => "Left Leg Angle: " + (v / Math.PI * 180) + "°", s => s.LeftLegToTorsoAngle, Math.PI, 0, 2 * Math.PI),
             new PlottableValue<KinectFeatureSet>("Kinect: Right Leg Angle", v => "Right Leg Angle: " + (v / Math.PI * 180) + "°", s => s.RightLegToTorsoAngle, Math.PI, 0, 2 * Math.PI)
         };
@@ -143,12 +144,15 @@ namespace BodyOrientationControlLib
                         new Tuple<string, PlottableValueGroup[], int>("Learner Features: ", learnerFeatureValueGroups, learnerFeatureValues.Length)
                     ),
                     0,
-                    new int[] { 38, 1, 2 }
+                    new int[] { 38, 40, 39 } 
                 );
 
-                // old default value presets: 
-                // { 41, 42, 44 } (Kinect right leg, learner status, right leg learned angle)
+                // old default value presets:
+                // { 38, 40, 39 } (Phone Heading, Shoulder Heading, Heading Delta)
+                // { 38, 1, 2 }   (Phone Heading, Quaternion Y, Z)
+                // { 42, 43, 45 } (Kinect right leg, learner status, right leg learned angle)
                 // { 4, 35, 5 }   (Rotation Pitch, Pitch energy, Rotation Roll)
+                // { 7, 8, 9 }    (Rotation Rate X, Y, Z)
                 // { 0, 1, 2 }    (Rotation Quaternion X, Y, Z)
             }
             else if (typeof(T) == typeof(SensorComparisonFeatureSet))
