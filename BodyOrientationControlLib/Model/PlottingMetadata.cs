@@ -67,7 +67,7 @@ namespace BodyOrientationControlLib
         };
 
         private static PlottableValue<KinectFeatureSet>[] kinectFeatureValues = new PlottableValue<KinectFeatureSet>[]{
-            new PlottableValue<KinectFeatureSet>("Kinect: Shoulder Angle", v => "Shoulder Heading: " + (v / Math.PI * 180).ToString("0.0") + "°", s => s.ShoulderOrientation, 0, -Math.PI, Math.PI),
+            new PlottableValue<KinectFeatureSet>("Kinect: Person Heading", v => "Person Heading: " + (v / Math.PI * 180).ToString("0.0") + "°", s => s.PersonHeading, 0, -Math.PI, Math.PI),
             new PlottableValue<KinectFeatureSet>("Kinect: Left Leg Angle", v => "Left Leg Angle: " + (v / Math.PI * 180) + "°", s => s.LeftLegToTorsoAngle, Math.PI, 0, 2 * Math.PI),
             new PlottableValue<KinectFeatureSet>("Kinect: Right Leg Angle", v => "Right Leg Angle: " + (v / Math.PI * 180) + "°", s => s.RightLegToTorsoAngle, Math.PI, 0, 2 * Math.PI)
         };
@@ -76,7 +76,7 @@ namespace BodyOrientationControlLib
             new PlottableValue<LearnerPredictedFeatureSet>("Learner: Learned Status", v => "Learned: " + (v == 1d ? "true" : "false"), s => s.IsLearned ? 1d : 0d, 0, -0.5, 1.5),
             new PlottableValue<LearnerPredictedFeatureSet>("Learner: Left Leg Angle", v => "Predicted Left Leg Angle: " + (v / Math.PI * 180) + "°", s => s.PredictedLeftLegAngle, Math.PI, 0, 2 * Math.PI),
             new PlottableValue<LearnerPredictedFeatureSet>("Learner: Right Leg Angle", v => "Predicted Right Leg Angle: " + (v / Math.PI * 180) + "°", s => s.PredictedRightLegAngle, Math.PI, 0, 2 * Math.PI),
-            new PlottableValue<LearnerPredictedFeatureSet>("Learner: Shoulder Angle", v => "Predicted Shoulder Angle: " + (v / Math.PI * 180) + "°", s => s.PredictedShoulderAngle, 0, -Math.PI, Math.PI)
+            new PlottableValue<LearnerPredictedFeatureSet>("Learner: Person Heading", v => "Predicted Person Heading: " + (v / Math.PI * 180) + "°", s => s.PredictedPersonHeading, 0, -Math.PI, Math.PI)
         };
 
         private static PlottableValueGroup[] sensorRawValueGroups = new PlottableValueGroup[] {
@@ -148,7 +148,7 @@ namespace BodyOrientationControlLib
                 );
 
                 // old default value presets:
-                // { 38, 40, 39 } (Phone Heading, Shoulder Heading, Heading Delta)
+                // { 38, 40, 39 } (Phone Heading, Person Heading, Heading Delta)
                 // { 38, 1, 2 }   (Phone Heading, Quaternion Y, Z)
                 // { 42, 43, 45 } (Kinect right leg, learner status, right leg learned angle)
                 // { 4, 35, 5 }   (Rotation Pitch, Pitch energy, Rotation Roll)

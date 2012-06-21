@@ -13,7 +13,7 @@ namespace BodyOrientationLib
         public const int NumValues = 3;
         public override int NumMultiplexableItems { get { return NumValues; } }
 
-        public double ShoulderOrientation { get; set; }
+        public double PersonHeading { get; set; }
         public double RightLegToTorsoAngle { get; set; }
         public double LeftLegToTorsoAngle { get; set; }
 
@@ -31,7 +31,7 @@ namespace BodyOrientationLib
         public override double[] ExtractValues()
         {
             double[] values = new double[NumMultiplexableItems];
-            values[0] = ShoulderOrientation;
+            values[0] = PersonHeading;
             values[1] = RightLegToTorsoAngle;
             values[2] = LeftLegToTorsoAngle;
             return values;
@@ -39,7 +39,7 @@ namespace BodyOrientationLib
 
         public override void InjectValues(double[] values)
         {
-            ShoulderOrientation = values[0];
+            PersonHeading = values[0];
             RightLegToTorsoAngle = values[1];
             LeftLegToTorsoAngle = values[2];
         }
@@ -64,7 +64,7 @@ namespace BodyOrientationLib
                 return;
 
             // Get the orientation relative to the camera
-            CalculateShoulderOrientation(vectors[JointID.ShoulderLeft], vectors[JointID.ShoulderRight]);
+            CalculatePersonHeading(vectors[JointID.ShoulderLeft], vectors[JointID.ShoulderRight]);
 
             // Often used vectors
             var hipRight = vectors[JointID.HipRight];
@@ -127,13 +127,17 @@ namespace BodyOrientationLib
             return Vector3D.CrossProduct(p2 - p1, p3 - p1);
         }
 
-        private void CalculateShoulderOrientation(Vector3D shoulderLeft, Vector3D shoulderRight)
+        private void CalculatePersonHeading(Vector3D shoulderLeft, Vector3D shoulderRight)
         {
             // Project the vector pointing from the left to right shoulder onto the ground
             var shoulderVector = (shoulderRight - shoulderLeft).SetToZero(NuiVectorExtensions.Component.Y);
 
-            // Get the angle where the 2D-vector (lying on the ground) is pointing at
-            ShoulderOrientation = -Math.Atan2(shoulderVector.Z, shoulderVector.X);
+            // Get the angle where the 2D-vector (lying on the ground) is pointing at.
+            // Due to the coordinate system transformation, that is already included in this
+            // formula here, the negative direction of the right shoulder will be the
+            // heading of the person in the phone coordinate system. This is due to 
+            // the other order and direction of the axes.
+            PersonHeading = -Math.Atan2(shoulderVector.Z, shoulderVector.X);
         }
     }
 }

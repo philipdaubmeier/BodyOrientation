@@ -254,7 +254,7 @@ namespace BodyOrientationGUI
             var offset = Math.Min(rightLeg.Foot.Y, leftLeg.Foot.Y) - vectors[JointID.FootRight].Y;
 
             var shoulderRotation = Matrix3D.Identity;
-            shoulderRotation.RotateAt(new Quaternion(new Vector3D(0, 1, 0), learnedFeatures.PredictedShoulderAngle.ToDegrees()), 
+            shoulderRotation.RotateAt(new Quaternion(new Vector3D(0, 1, 0), learnedFeatures.PredictedPersonHeading.ToDegrees()), 
                                         (Point3D)vectors[JointID.Spine]);
 
             for (int i = 0; i < (int)JointID.Count; i++)

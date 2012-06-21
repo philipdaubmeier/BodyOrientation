@@ -139,14 +139,24 @@ namespace BodyOrientationLib
 
             // The angle is then turned around 180°, as the phone is assumed to face
             // to the back, and we want an angle similar to the where the user is faced. 
-            // Add the offset from the calibration to it to compensate for the Kinect
-            // not facing northwards, but any direction.
-            angle = ApplyAngleOffset(TurnAround(angle), rawManual.CalibrationAngle);
+            angle = TurnAround(angle);
 
-            // If the calibration just happened and the quaternion for the calibration
-            // was set, but not yet the calculated calibration angle, set it now.
-            if (!rawManual.CalibrationQuaternion.IsIdentity && rawManual.CalibrationAngle == 0d)
+            // Was the calibration done already? Then apply it to the angle
+            if (rawManual.CalibrationAngle != 0d)
             {
+                // Add the offset from the calibration to it to compensate for the Kinect
+                // not facing northwards, but any direction.
+                angle = ApplyAngleOffset(angle, rawManual.CalibrationAngle);
+
+                // Applying the heading rotation to the quaternion to make the phones movement 
+                // independent of the heading. Very important step for transforming into a
+                // machine learnable stream!
+                ApplyCalibrationAngle(rawSensor, -angle);
+            }
+            else if (!rawManual.CalibrationQuaternion.IsIdentity)
+            {
+                // If the calibration just happened and the quaternion for the calibration
+                // was set, but not yet the calculated calibration angle, set it now.
                 if (CalibrationAngleCalculated != null)
                     CalibrationAngleCalculated(this, new CalibrationAngleCalculatedEventArgs() { CalibrationAngle = -angle });
                 angle = 0;
@@ -157,16 +167,12 @@ namespace BodyOrientationLib
             
             // TODO: reconstruct user heading with: 
             // userHeading = sensorAngle - estimatedDelta 
-            //             = sensorAngle - (sensorAngle - ShoulderOrientation)
-            //             = ShoulderOrientation
+            //             = sensorAngle - (sensorAngle - PersonOrientation)
+            //             = PersonOrientation
 
 
 
-            // Applying the heading rotation to the quaternion to make the phones movement 
-            // independent of the heading. Very important step for transforming into a
-            // machine learnable stream!
-            ApplyCalibrationAngle(rawSensor, -angle);
-
+            
 
             // Process through Sequence analyzer (extracts statistical features over the last x values)
             // and fill into SensorFeatureSet
@@ -182,14 +188,14 @@ namespace BodyOrientationLib
             kinectFeatures.ReadFromSkeletonJoints(skeletonJoints);
 
             // Substract the kinect heading from the phone heading to get the heading delta
-            sensorFeatures.HeadingDelta = sensorFeatures.Heading - kinectFeatures.ShoulderOrientation;
+            sensorFeatures.HeadingDelta = sensorFeatures.Heading - kinectFeatures.PersonHeading;
 
             // Process through Supervised learner
             learnerFeatures.ReadFromLearnerResults(learner.FeedValues(
                                 new double[]{
                                     kinectFeatures.LeftLegToTorsoAngle,
                                     kinectFeatures.RightLegToTorsoAngle,
-                                    kinectFeatures.ShoulderOrientation
+                                    kinectFeatures.PersonHeading
                                 },
                                 sensorFeatures.RotationX,
                                 sensorFeatures.RotationY,

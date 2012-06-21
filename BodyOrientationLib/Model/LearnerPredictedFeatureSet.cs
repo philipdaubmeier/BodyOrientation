@@ -13,7 +13,7 @@ namespace BodyOrientationLib
 
         public double PredictedLeftLegAngle { get; set; }
         public double PredictedRightLegAngle { get; set; }
-        public double PredictedShoulderAngle { get; set; }
+        public double PredictedPersonHeading { get; set; }
 
         public bool IsLearned { get; set; }
 
@@ -23,14 +23,14 @@ namespace BodyOrientationLib
         {
             PredictedLeftLegAngle = responses[0];
             PredictedRightLegAngle = responses[1];
-            PredictedShoulderAngle = responses[2];
+            PredictedPersonHeading = responses[2];
         }
 
         public override void WriteToRecorder(BinaryWriter writer)
         {
             writer.Write(PredictedLeftLegAngle);
             writer.Write(PredictedRightLegAngle);
-            writer.Write(PredictedShoulderAngle);
+            writer.Write(PredictedPersonHeading);
             writer.Write(IsLearned ? 1d : 0d);
         }
 
@@ -38,7 +38,7 @@ namespace BodyOrientationLib
         {
             PredictedLeftLegAngle = reader.ReadDouble();
             PredictedRightLegAngle = reader.ReadDouble();
-            PredictedShoulderAngle = reader.ReadDouble();
+            PredictedPersonHeading = reader.ReadDouble();
             IsLearned = reader.ReadDouble() == 1d;
         }
 
@@ -48,7 +48,7 @@ namespace BodyOrientationLib
             {
                 PredictedLeftLegAngle = this.PredictedLeftLegAngle,
                 PredictedRightLegAngle = this.PredictedRightLegAngle,
-                PredictedShoulderAngle = this.PredictedShoulderAngle,
+                PredictedPersonHeading = this.PredictedPersonHeading,
                 IsLearned = this.IsLearned
             };
         }
