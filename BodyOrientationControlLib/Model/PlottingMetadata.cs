@@ -144,7 +144,7 @@ namespace BodyOrientationControlLib
                         new Tuple<string, PlottableValueGroup[], int>("Learner Features: ", learnerFeatureValueGroups, learnerFeatureValues.Length)
                     ),
                     0,
-                    new int[] { 38, 40, 39 } 
+                    new int[] { 38, 40, 39 }
                 );
 
                 // old default value presets:
@@ -152,6 +152,7 @@ namespace BodyOrientationControlLib
                 // { 38, 1, 2 }   (Phone Heading, Quaternion Y, Z)
                 // { 42, 43, 45 } (Kinect right leg, learner status, right leg learned angle)
                 // { 4, 35, 5 }   (Rotation Pitch, Pitch energy, Rotation Roll)
+                // { 4, 5, 6 }    (Rotation Pitch, Rotation Roll, Rotation Yaw)
                 // { 7, 8, 9 }    (Rotation Rate X, Y, Z)
                 // { 0, 1, 2 }    (Rotation Quaternion X, Y, Z)
             }

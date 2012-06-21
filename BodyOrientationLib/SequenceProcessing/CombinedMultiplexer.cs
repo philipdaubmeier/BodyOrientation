@@ -85,6 +85,7 @@ namespace BodyOrientationLib
         public void PushRawKinectValues(KinectRawFeatureSet item) { base.Push(1, item); }
         public void PushRawManualValues(ManualRawFeatureSet item) { base.Push(2, item); }
 
+
         /// <summary>
         /// A multiplexed time frame is passed to this method, if pending. Here, the sequence
         /// analysis and feature extraction is done, as well as the feeding of machine learning 
@@ -102,33 +103,45 @@ namespace BodyOrientationLib
             var learnerFeatures = new LearnerPredictedFeatureSet();
 
             // TODO: outsource this. this is just quick-and-dirty inside this function
+            // Transform the quaternion rotation into a matrix, due to performance reasons
             var rotationMatrix = Matrix3D.Identity;
             rotationMatrix.Rotate(rawSensor.Quat);
             
+            // Start with the characteristical unit vectors
             var vecBottomToHead = new Vector3D(0, 1, 0);
             var vecThroughDisplay = new Vector3D(0, 0, -1);
 
+            // Rotate them around given the rotation matrix, constructed from the quaternion
             var vectors = new Vector3D[] { vecBottomToHead, vecThroughDisplay };
             rotationMatrix.Transform(vectors);
             vecBottomToHead = vectors[0];
             vecThroughDisplay = vectors[1];
 
+            // Get the weight by using the euclidean norm of the projection of one unit vector
             var weight = vecBottomToHead.ProjectToGround().Length;
             
-            var angleA = vecBottomToHead.AngleOnGround();
-            var angleB = vecThroughDisplay.AngleOnGround();
-
             // Adjust weight with logistic function
             weight = InterpolationLogisticsFunction(weight);
 
             // Get the angle by interpolating between the two candidate angles, 
-            // weighted by the adjusted weight. The angle is then turned around 180°, 
-            // as the phone is assumed to face to the back, and we want an angle 
-            // similar to the where the user is faced. Interpolate over the shorter 
-            // path around the circle with the LerpRadians method.
+            // weighted by the adjusted weight. Interpolate over the shorter 
+            // path around the circle with lerping vectors first then get the angle.
+            var angle = LerpVectors(vecBottomToHead, vecThroughDisplay, weight).AngleOnGround();
+            
+            // Old method: calculated angles first, then interpolated via a special 
+            // cyclic lerp function. This is equivalent because it is basically a 
+            // transformation to polar coordinates instead lerping in cartesian 
+            // coordinates, but not as performant as the method is now.
+            //
+            //    var angleA = vecBottomToHead.AngleOnGround();
+            //    var angleB = vecThroughDisplay.AngleOnGround();
+            //    var angle = LerpAnglesRadians(angleB, angleA, weight);
+
+            // The angle is then turned around 180°, as the phone is assumed to face
+            // to the back, and we want an angle similar to the where the user is faced. 
             // Add the offset from the calibration to it to compensate for the Kinect
             // not facing northwards, but any direction.
-            var angle = ApplyAngleOffset(TurnAround(LerpRadians(angleB, angleA, weight)), rawManual.CalibrationAngle);
+            angle = ApplyAngleOffset(TurnAround(angle), rawManual.CalibrationAngle);
 
             // If the calibration just happened and the quaternion for the calibration
             // was set, but not yet the calculated calibration angle, set it now.
@@ -306,7 +319,12 @@ namespace BodyOrientationLib
             return angle > Math.PI ? angle - 2 * Math.PI : (angle < -Math.PI ? angle + 2 * Math.PI : angle);
         }
 
-        private double LerpRadians(double start, double end, double amount)
+        private Vector3D LerpVectors(Vector3D start, Vector3D end, double amount)
+        {
+            return start * amount + end * (1 - amount);
+        }
+
+        private double LerpAnglesRadians(double start, double end, double amount)
         {
             var difference = Math.Abs(end - start);
             if (difference > Math.PI)
